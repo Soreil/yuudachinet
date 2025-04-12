@@ -1,49 +1,10 @@
 ﻿using NetCord.Rest;
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
+
+using yuudachi.Models;
 
 namespace yuudachi;
-
-record Current([property: JsonPropertyName("main")] Main Main);
-
-record Main([property: JsonPropertyName("np")] string Np,
-            [property: JsonPropertyName("listeners")] int Listeners,
-            [property: JsonPropertyName("bitrate")] int Bitrate,
-            [property: JsonPropertyName("isafkstream")] bool Isafkstream,
-            [property: JsonPropertyName("isstreamdesk")] bool Isstreamdesk,
-            [property: JsonPropertyName("current")] int Current,
-            [property: JsonPropertyName("start_time")] int StartTime,
-            [property: JsonPropertyName("end_time")] int EndTime,
-            [property: JsonPropertyName("lastset")] string Lastset,
-            [property: JsonPropertyName("trackid")] int Trackid,
-            [property: JsonPropertyName("thread")] string Thread,
-            [property: JsonPropertyName("requesting")] bool Requesting,
-            [property: JsonPropertyName("djname")] string Djname,
-            [property: JsonPropertyName("dj")] Dj Dj,
-            [property: JsonPropertyName("queue")] Queue[] Queue,
-            [property: JsonPropertyName("lp")] Lp[] Lp);
-
-record Dj([property: JsonPropertyName("id")] int ID,
-          [property: JsonPropertyName("djname")] string Djname,
-          [property: JsonPropertyName("djtext")] string Djtext,
-          [property: JsonPropertyName("djimage")] string Djimage,
-          [property: JsonPropertyName("djcolor")] string Djcolor,
-          [property: JsonPropertyName("visible")] bool Visible,
-          [property: JsonPropertyName("priority")] int Priority,
-          [property: JsonPropertyName("css")] string CSS,
-          [property: JsonPropertyName("theme_id")] int ThemeID,
-          [property: JsonPropertyName("role")] string Role);
-
-record Queue([property: JsonPropertyName("meta")] string Meta,
-             [property: JsonPropertyName("time")] string Time,
-             [property: JsonPropertyName("type")] int Type,
-             [property: JsonPropertyName("timestamp")] long Timestamp);
-
-record Lp([property: JsonPropertyName("meta")] string Meta,
-          [property: JsonPropertyName("time")] string Time,
-          [property: JsonPropertyName("type")] int Type,
-          [property: JsonPropertyName("timestamp")] int Timestamp);
 
 class Radio
 {

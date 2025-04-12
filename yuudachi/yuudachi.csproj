@@ -12,7 +12,6 @@
 		<PackageReference Include="NetCord" Version="1.0.0-alpha.359" />
 		<PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.359" />
 		<PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.359" />
-		<PackageReference Include="System.Text.Json" Version="10.0.0-preview.3.25171.5" />
 	</ItemGroup>
 
 	<ItemGroup>

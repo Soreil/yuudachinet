@@ -20,7 +20,12 @@ public class ButtonPresses : ComponentInteractionModule<ComponentInteractionCont
     {
         return "test";
     }
+}
 
+public class MoonCommmandsModule : ApplicationCommandModule<ApplicationCommandContext>
+{
+    [SlashCommand("moon", "Gets the current moon phase")]
+    public string GetMoonEmoji() => Moon.Moon.MoonPhase();
 }
 
 [SlashCommand("radio", "r/a/dio tools")]
@@ -34,8 +39,6 @@ public class RadioCommandsModule : ApplicationCommandModule<ApplicationCommandCo
         Radio = new Radio();
         Logger = logger;
     }
-
-
 
     [SubSlashCommand("np", "Now Playing")]
     public async Task<InteractionMessageProperties> NowPlaying()
