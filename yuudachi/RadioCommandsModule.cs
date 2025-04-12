@@ -2,31 +2,8 @@
 using NetCord.Rest;
 using Microsoft.Extensions.Logging;
 using NetCord;
-using NetCord.Services.ComponentInteractions;
 
 namespace yuudachi;
-
-public class ButtonPresses : ComponentInteractionModule<ComponentInteractionContext>
-{
-    public ButtonPresses(ILogger<ButtonPresses> logger)
-    {
-        Logger = logger;
-    }
-
-    public ILogger<ButtonPresses> Logger { get; }
-
-    [ComponentInteraction("buttondf")]
-    public static string HandleButtonPress()
-    {
-        return "test";
-    }
-}
-
-public class MoonCommmandsModule : ApplicationCommandModule<ApplicationCommandContext>
-{
-    [SlashCommand("moon", "Gets the current moon phase")]
-    public string GetMoonEmoji() => Moon.Moon.MoonPhase();
-}
 
 [SlashCommand("radio", "r/a/dio tools")]
 public class RadioCommandsModule : ApplicationCommandModule<ApplicationCommandContext>

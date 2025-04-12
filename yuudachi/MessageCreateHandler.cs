@@ -1,5 +1,4 @@
-﻿//ViI8ZVPvuxxVlOUIwisZjzmVLuGw_IOg
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
