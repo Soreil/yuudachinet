@@ -5,6 +5,9 @@ using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
 using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
+using NetCord.Hosting.Services.ComponentInteractions;
+
+using System.Reflection;
 
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -16,6 +19,7 @@ builder.Services
                           | GatewayIntents.DirectMessageReactions
                           | GatewayIntents.GuildMessageReactions)
     .AddApplicationCommands()
+    .AddComponentInteractions()
     .AddGatewayEventHandlers(typeof(Program).Assembly);
 
 var host = builder.Build()
