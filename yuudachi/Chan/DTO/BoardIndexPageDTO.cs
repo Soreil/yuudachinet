@@ -2,4 +2,4 @@
 
 namespace yuudachi.Chan.DTO;
 
-public record BoardIndexPageDTO([property: JsonPropertyName("threads")] List<ThreadDTO> Threads);
+public record BoardIndexPageDTO([property: JsonPropertyName("threads")] List<ThreadRepliesDTO> Threads);
