@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using NetCord;
+
+using System.Text.Json;
 
 using yuudachi.Chan.DTO;
 
@@ -8,20 +10,45 @@ public class FourChanClient
 {
     private HttpClient Client { get; }
 
-    const string boardsAPI = @"https://a.4cdn.org/";
+    const string APIRoot = @"https://a.4cdn.org/";
+    const string ImageRoot = @"https://i.4cdn.org/";
+    const string StaticRoot = @"https://s.4cdn.org/";
     const string boards = @"boards.json";
+
+    const int GifBanners = 253;
+    const int PngBanners = 262;
+    const int JpgBanners = 224;
+    private readonly string[] FileTypes = ["jpg", "png", "gif"];
+
+    public string GetRandomBannerURL()
+    {
+        var rng = new Random();
+        var res = rng.GetItems([.. FileTypes], 3)[0];
+
+        return res switch
+        {
+            "jpg" => $@"{StaticRoot}/image/title/{rng.Next(0, JpgBanners)}.jpg",
+            "png" => $@"{StaticRoot}/image/title/{rng.Next(0, PngBanners)}.png",
+            "gif" => $@"{StaticRoot}/image/title/{rng.Next(0, GifBanners)}.gif",
+            _ => throw new ArgumentOutOfRangeException(nameof(res), res, null)
+        };
+    }
 
     public FourChanClient()
     {
         Client = new HttpClient()
         {
-            BaseAddress = new Uri(boardsAPI),
+            BaseAddress = new Uri(APIRoot),
             DefaultRequestHeaders = {
                 { "User-Agent", "Yuudachi" },
                 { "Accept", "application/json" }
             }
         };
     }
+
+    public static string GetImageUrl(string board, long timestamp, string ext) => $"{ImageRoot}{board}/{timestamp}{ext}";
+
+    public static string GetThreadURL(string board, int thread) => $"{ImageRoot}{board}/thread/{thread}";
 
     public async Task<List<BoardDTO>> GetBoards()
     {
@@ -97,4 +124,6 @@ public class FourChanClient
             return null;
         }
     }
+
+    internal static string GetCountryImageURL(string country) => $@"{StaticRoot}/image/country/{country.ToLowerInvariant()}.gif";
 }
