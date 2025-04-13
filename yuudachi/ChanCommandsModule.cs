@@ -16,8 +16,8 @@ public class ChanCommandsModule : ApplicationCommandModule<ApplicationCommandCon
     {
         Logger = logger;
         Chan = fourChanClient;
-
     }
+
     [SubSlashCommand("random", "Gets a random thread")]
     public async Task<string> Post([SlashCommandParameter(Name = "board", ChoicesProviderType = typeof(FourChanBoardPicker))] string board)
     {
@@ -25,7 +25,6 @@ public class ChanCommandsModule : ApplicationCommandModule<ApplicationCommandCon
         if (page == null)
         {
             return "Error getting 4chan data";
-
         }
 
         var thread = Random.Shared.GetItems([.. page.Threads], 1)[0];

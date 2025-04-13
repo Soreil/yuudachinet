@@ -11,17 +11,21 @@ public class FourChanBoardPicker : IChoicesProvider<ApplicationCommandContext>
 
     private ImmutableSortedDictionary<string, string>? Boards { get; set; }
 
-    public ValueTask<IEnumerable<ApplicationCommandOptionChoiceProperties>?> GetChoicesAsync(SlashCommandParameter<ApplicationCommandContext> parameter)
+    public ValueTask<IEnumerable<ApplicationCommandOptionChoiceProperties>?> GetChoicesAsync(
+        SlashCommandParameter<ApplicationCommandContext> parameter)
     {
         if (Chan == null)
             return new();
         if (Boards == null || Boards.Count == 0)
             Boards = Chan.GetBoards().Result.ToImmutableSortedDictionary(x => x.Board, x => x.Title);
 
-        List<ApplicationCommandOptionChoiceProperties> choices = [.. Boards.Select(x => new ApplicationCommandOptionChoiceProperties($"{x.Key} - {x.Value}", x.Key))];
+        List<ApplicationCommandOptionChoiceProperties> choices =
+            [.. Boards.Select(
+                x => new ApplicationCommandOptionChoiceProperties($"{x.Key} - {x.Value}", x.Key))];
 
         return new ValueTask<IEnumerable<ApplicationCommandOptionChoiceProperties>?>(
-            choices.Where(x => x.StringValue is "b" or "g")
+            choices
+            .Take(25)
             );
     }
 }
