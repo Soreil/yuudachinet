@@ -1,8 +1,8 @@
-﻿
-using yuudachi.Chan;
+﻿using yuudachi.Chan;
 
 namespace Tests;
-public class Tests
+
+public class FourChanTests
 {
     [Test]
     public async Task GetBoards()
@@ -14,7 +14,6 @@ public class Tests
     }
 
     [Test]
-
     public async Task GetPagesOnCatalogBoard()
     {
         var chan = new FourChanClient();
@@ -26,7 +25,6 @@ public class Tests
     }
 
     [Test]
-
     public async Task GetPagesOnBoard()
     {
         var chan = new FourChanClient();
@@ -51,16 +49,14 @@ public class Tests
     [Test]
     public async Task GetThread()
     {
-        var threadId = 503089951;
-
         var chan = new FourChanClient();
-        var threads = await chan.GetThreadsOnPage("pol");
-        Assert.That(threads, Has.Count.GreaterThan(0));
-        var item = threads.Single(x => x.Threads.SingleOrDefault(x => x.Number == threadId) != null).Threads.Single(x => x.Number == threadId);
+        var threadsOnPage = await chan.GetThreadsOnPage("pol");
+        Assert.That(threadsOnPage, Has.Count.GreaterThan(0));
+        var threadDescriptor = threadsOnPage.First().ThreadDescriptors.First();
 
-        Assert.That(item, Is.Not.Null);
+        Assert.That(threadDescriptor, Is.Not.Null);
 
-        var thread = await chan.TryGetThread("pol", item.Number);
+        var thread = await chan.TryGetThread("pol", threadDescriptor.Number);
 
         Assert.That(thread, Is.Not.Null);
     }
