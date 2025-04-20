@@ -9,12 +9,18 @@ using NetCord.Hosting.Services.ComponentInteractions;
 
 using yuudachi;
 using yuudachi.Chan;
+using yuudachi.Groq;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.Configure<GroqClientKey>(options => options.Key = builder.Configuration["GROQ_API_KEY"]
+                  ?? throw new InvalidOperationException("Environment variable GROQ_API_KEY is not set."));
 
 builder.Services
     .AddTransient<FourChanClient>()
     .AddTransient<FourChanBoardPicker>()
+    .AddTransient<GroqClient>()
+    .AddTransient<GroqModelPicker>()
     .AddDiscordGateway(options => options.Intents =
                             GatewayIntents.GuildMessages
                           | GatewayIntents.DirectMessages
@@ -31,6 +37,8 @@ var host = builder.Build()
 
 var client = host.Services.GetRequiredService<FourChanClient>();
 FourChanBoardPicker.Chan = client;
+var groqClient = host.Services.GetRequiredService<GroqClient>();
+GroqModelPicker.Client = groqClient;
 
 host.AddModules(typeof(Program).Assembly);
 

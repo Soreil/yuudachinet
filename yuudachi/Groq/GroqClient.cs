@@ -1,25 +1,56 @@
-﻿using System.Text.Json;
+﻿using Microsoft.Extensions.Options;
+
+using System.Text.Json;
 
 namespace yuudachi.Groq;
 
 public class GroqClient
 {
-    private const string CompletionsRoot = @"https://api.groq.com/openai/v1/chat/completions";
+    private const string APIRoot = @"https://api.groq.com/openai/v1/";
+    private const string Completions = @"chat/completions";
+    private const string Models = @"models";
 
     private HttpClient Client { get; }
 
-    public GroqClient(string authToken)
+    public GroqClient(string token)
     {
         Client = new HttpClient()
         {
-            BaseAddress = new Uri(CompletionsRoot),
+            BaseAddress = new Uri(APIRoot),
             DefaultRequestHeaders =
             {
                 { "User-Agent", "Yuudachi" },
                 { "Accept", "application/json" },
-                { "Authorization",  $"Bearer {authToken}"}
+                { "Authorization",  $"Bearer {token}"}
             }
         };
+    }
+    public GroqClient(IOptions<GroqClientKey> authToken) : this(authToken.Value.Key)
+    {
+    }
+
+    public async Task<GroqModels> GetAllModels(CancellationToken cancellationToken = default)
+    {
+        var response = await Client.GetAsync(Models, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+        }
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        var result = JsonSerializer.Deserialize<GroqModels>(responseContent);
+        return result ?? throw new Exception("Failed to deserialize response");
+    }
+
+    public async Task<GroqModelDescriptor?> TryGetModel(string name, CancellationToken cancellationToken = default)
+    {
+        var response = await Client.GetAsync($"models/{name}", cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+        }
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        var result = JsonSerializer.Deserialize<GroqModelDescriptor>(responseContent);
+        return result ?? throw new Exception("Failed to deserialize response");
     }
 
     public async Task<GroqResponse> ConversationResult(Conversation conversation, CancellationToken ct = default)
@@ -29,7 +60,7 @@ public class GroqClient
         var json = JsonSerializer.Serialize(request);
 
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        var response = await Client.PostAsync(CompletionsRoot, content, ct);
+        var response = await Client.PostAsync(Completions, content, ct);
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception($"Error: {response.StatusCode} - {response.ReasonPhrase}");

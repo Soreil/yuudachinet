@@ -7,14 +7,37 @@ public class GroqTests
     private const string Model = "deepseek-r1-distill-llama-70b";
     private static string Key => Environment.GetEnvironmentVariable("GROQ_API_KEY") ?? "ERROR";
 
-    [Test]
-    public async Task TestGroqConversation()
+    [SetUp]
+    public void Setup()
     {
         if (Key == "ERROR")
         {
             Assert.Fail("GROQ_API_KEY environment variable not set");
         }
+    }
 
+    [Test]
+    public async Task TestGroqGetModelInfo()
+    {
+        var client = new GroqClient(Key);
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var model = await client.TryGetModel(Model, cts.Token);
+        Assert.That(model, Is.Not.Null);
+        Assert.That(model.Id, Is.EqualTo(Model));
+    }
+    [Test]
+    public async Task TestGroqGetModels()
+    {
+        var client = new GroqClient(Key);
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var models = await client.GetAllModels(cts.Token);
+        Assert.That(models, Is.Not.Null);
+        Assert.That(models.Data, Has.Count.Not.Zero);
+    }
+
+    [Test]
+    public async Task TestGroqConversation()
+    {
         var client = new GroqClient(Key);
 
         var convo = GroqClient.StartConversation(Model, "You are a helpful assistant. Answer the following question: What is the capital of France?");
@@ -33,11 +56,6 @@ public class GroqTests
     [Test]
     public async Task TestGroqConversationMultipleMessages()
     {
-        if (Key == "ERROR")
-        {
-            Assert.Fail("GROQ_API_KEY environment variable not set");
-        }
-
         var client = new GroqClient(Key);
 
         var convo = GroqClient.StartConversation(Model);
@@ -62,11 +80,6 @@ public class GroqTests
     [Test]
     public async Task TestGroqConversationMoreThanTwoMessages()
     {
-        if (Key == "ERROR")
-        {
-            Assert.Fail("GROQ_API_KEY environment variable not set");
-        }
-
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
         var client = new GroqClient(Key);
