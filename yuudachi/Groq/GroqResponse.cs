@@ -14,7 +14,7 @@ public record GroqResponse(
 
 public record Choice(
     [property: JsonPropertyName("index")] int Index,
-    [property: JsonPropertyName("delta")] Message Message,
+    [property: JsonPropertyName("message")] Message Message,
     [property: JsonPropertyName("logprobs")] object Logprobs,
     [property: JsonPropertyName("finish_reason")] string FinishReason);
 
