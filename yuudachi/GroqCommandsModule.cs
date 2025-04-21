@@ -8,15 +8,17 @@ namespace yuudachi;
 [SlashCommand("groq", "Groq commands")]
 public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandContext>
 {
-    private readonly GroqClient _groqClient;
+    private readonly GroqClient groqClient;
+
     public GroqCommandsModule(GroqClient groqClient)
     {
-        _groqClient = groqClient;
+        this.groqClient = groqClient;
     }
+
     [SubSlashCommand("modelinfo", "Lists model details")]
     public async Task<InteractionMessageProperties> GetGroqModels([SlashCommandParameter(ChoicesProviderType = typeof(GroqModelPicker))] string modelName)
     {
-        var model = await _groqClient.TryGetModel(modelName);
+        var model = await groqClient.TryGetModel(modelName);
         if (model == null)
         {
             return "Model not found";
@@ -35,8 +37,8 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
                 },
                 new EmbedFieldProperties()
                 {
-                    Name = "Max Tokens",
-                    Value = model.Created.ToString(),
+                    Name = "Released At",
+                    Value = DateTimeOffset.FromUnixTimeSeconds( model.Created).ToString()
                 }
             ]
             }]
