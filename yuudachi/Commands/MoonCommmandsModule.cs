@@ -1,6 +1,6 @@
 ﻿using NetCord.Services.ApplicationCommands;
 
-namespace yuudachi;
+namespace yuudachi.Commands;
 
 public class MoonCommmandsModule : ApplicationCommandModule<ApplicationCommandContext>
 {

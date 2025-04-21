@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace yuudachi.Models;
+namespace yuudachi.Radio;
 
-record Dj([property: JsonPropertyName("id")] int ID,
+public record Dj([property: JsonPropertyName("id")] int ID,
           [property: JsonPropertyName("djname")] string Djname,
           [property: JsonPropertyName("djtext")] string Djtext,
           [property: JsonPropertyName("djimage")] string Djimage,

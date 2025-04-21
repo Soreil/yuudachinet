@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace yuudachi.Models;
+namespace yuudachi.Radio;
 
-record Main([property: JsonPropertyName("np")] string Np,
+public record Main([property: JsonPropertyName("np")] string Np,
             [property: JsonPropertyName("listeners")] int Listeners,
             [property: JsonPropertyName("bitrate")] int Bitrate,
             [property: JsonPropertyName("isafkstream")] bool Isafkstream,

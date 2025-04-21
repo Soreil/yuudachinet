@@ -3,7 +3,7 @@ using NetCord.Rest;
 using yuudachi.Chan;
 using System.Collections.Immutable;
 
-namespace yuudachi;
+namespace yuudachi.ChoiceProviders;
 
 public class FourChanBoardPicker : IChoicesProvider<ApplicationCommandContext>
 {

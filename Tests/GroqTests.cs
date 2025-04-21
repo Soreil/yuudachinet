@@ -25,6 +25,7 @@ public class GroqTests
         Assert.That(model, Is.Not.Null);
         Assert.That(model.Id, Is.EqualTo(Model));
     }
+
     [Test]
     public async Task TestGroqGetModels()
     {

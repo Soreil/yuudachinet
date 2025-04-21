@@ -9,12 +9,15 @@ using NetCord.Hosting.Services.ComponentInteractions;
 
 using yuudachi;
 using yuudachi.Chan;
+using yuudachi.ChoiceProviders;
 using yuudachi.Groq;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.Configure<GroqClientKey>(options => options.Key = builder.Configuration["GROQ_API_KEY"]
                   ?? throw new InvalidOperationException("Environment variable GROQ_API_KEY is not set."));
+
+builder.Services.Configure<GroqSettingsOptions>(builder.Configuration.GetSection("GroqSettings"));
 
 builder.Services
     .AddTransient<FourChanClient>()

@@ -2,17 +2,15 @@
 
 using System.Text.Json;
 
-using yuudachi.Models;
+namespace yuudachi.Radio;
 
-namespace yuudachi;
-
-class Radio
+public class RadioClient
 {
     const string api = @"https://r-a-d.io/api";
     const string frontpage = @"https://r-a-d.io";
     const int radioRed = 0xDF4C3A;
 
-    public Radio()
+    public RadioClient()
     {
         Client = new HttpClient() { BaseAddress = new Uri(frontpage) };
     }

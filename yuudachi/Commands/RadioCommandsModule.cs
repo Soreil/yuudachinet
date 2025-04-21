@@ -2,18 +2,19 @@
 using NetCord.Rest;
 using Microsoft.Extensions.Logging;
 using NetCord;
+using yuudachi.Radio;
 
-namespace yuudachi;
+namespace yuudachi.Commands;
 
 [SlashCommand("radio", "r/a/dio tools")]
 public class RadioCommandsModule : ApplicationCommandModule<ApplicationCommandContext>
 {
-    private Radio Radio { get; }
+    private RadioClient Radio { get; }
     public ILogger<RadioCommandsModule> Logger { get; }
 
     public RadioCommandsModule(ILogger<RadioCommandsModule> logger)
     {
-        Radio = new Radio();
+        Radio = new RadioClient();
         Logger = logger;
     }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 using NetCord;
+using NetCord.Rest;
 using NetCord.Services.ComponentInteractions;
 
 namespace yuudachi;
@@ -18,5 +19,11 @@ public class ButtonPresses : ComponentInteractionModule<ComponentInteractionCont
     public static string HandleButtonPress()
     {
         return "test";
+    }
+
+    [ComponentInteraction("ReplyToCommand")]
+    public async Task<string> HandleReplyToCommand()
+    {
+        return Context.User.GlobalName;
     }
 }

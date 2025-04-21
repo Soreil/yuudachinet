@@ -2,7 +2,7 @@
 using NetCord.Rest;
 using yuudachi.Groq;
 
-namespace yuudachi;
+namespace yuudachi.ChoiceProviders;
 
 public class GroqModelPicker : IChoicesProvider<ApplicationCommandContext>
 {
