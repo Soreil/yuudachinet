@@ -24,6 +24,7 @@ builder.Services
     .AddTransient<FourChanBoardPicker>()
     .AddTransient<GroqClient>()
     .AddTransient<GroqModelPicker>()
+    .AddSingleton<GroqConversationHistory>()
     .AddDiscordGateway(options => options.Intents =
                             GatewayIntents.GuildMessages
                           | GatewayIntents.DirectMessages

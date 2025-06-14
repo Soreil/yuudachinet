@@ -13,16 +13,18 @@ namespace yuudachi.Commands;
 public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandContext>
 {
     private readonly GroqClient groqClient;
+    private readonly GroqConversationHistory groqConversationHistory;
     private string MostRecentModelName;
 
-    public GroqCommandsModule(GroqClient groqClient, IOptions<GroqSettingsOptions> settings)
+    public GroqCommandsModule(GroqClient groqClient, GroqConversationHistory groqConversationHistory, IOptions<GroqSettingsOptions> settings)
     {
         this.groqClient = groqClient;
+        this.groqConversationHistory = groqConversationHistory;
         MostRecentModelName = settings.Value.DefaultModelName;
     }
 
     [SubSlashCommand("ask", "Ask a question")]
-    public async Task<InteractionMessageProperties> Ask(
+    public async Task Ask(
         [SlashCommandParameter(Description = "Your very interesting query", MinLength = 1)] string question,
         [SlashCommandParameter(Description = "Temperature controls how creative the answers are, 0.0 is rigid and 2.0 is extremely cooked", MinValue = 0.0, MaxValue = 2.0)] double temp = 0.6,
         [SlashCommandParameter(ChoicesProviderType = typeof(GroqModelPicker))] string? modelName = null)
@@ -39,26 +41,25 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
         var model = await groqClient.TryGetModel(modelName);
         if (model == null || model.Id is null)
         {
-            return "Model not found";
+            _ = await RespondAsync(InteractionCallback.Message("Model not found"), false);
+            return;
         }
         var convo = GroqClient.StartConversation(model.Id, startingTemperature: temp);
         convo.AddMessage(question);
         var res = await groqClient.ConversationResult(convo);
 
+
         var result = new InteractionMessageProperties()
         {
             Content = res.Choices[0].Message.Content,
-
-            Components = [new ActionRowProperties(
-                    [
-                    new ButtonProperties("ReplyToCommand",
-                    "Reply",
-                    ButtonStyle.Primary)
-                    ])
-            ]
         };
 
-        return result;
+        var reply = await RespondAsync(InteractionCallback.Message(result), true);
+
+        if (reply?.Interaction.ResponseMessageId is not null)
+        {
+            groqConversationHistory.Conversations.Add(reply.Interaction.ResponseMessageId.Value, convo);
+        }
     }
 
     [SubSlashCommand("modelinfo", "Lists model details")]

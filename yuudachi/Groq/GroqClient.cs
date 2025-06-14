@@ -67,9 +67,12 @@ public class GroqClient
         }
         var responseContent = await response.Content.ReadAsStringAsync(ct);
 
-        var result = JsonSerializer.Deserialize<GroqResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<GroqResponse>(responseContent) ?? throw new Exception("Failed to deserialize response");
 
-        return result ?? throw new Exception("Failed to deserialize response");
+        var msg = Message.NewSystemMessage(result.Choices[0].Message.Content);
+        conversation.AddResponse(msg);
+
+        return result;
     }
 
     public static Conversation StartConversation(string model, string? prompt = "", double startingTemperature = 0.6)

@@ -20,10 +20,4 @@ public class ButtonPresses : ComponentInteractionModule<ComponentInteractionCont
     {
         return "test";
     }
-
-    [ComponentInteraction("ReplyToCommand")]
-    public async Task<string> HandleReplyToCommand()
-    {
-        return Context.User.GlobalName;
-    }
 }

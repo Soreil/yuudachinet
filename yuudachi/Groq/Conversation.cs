@@ -21,7 +21,7 @@ public class Conversation
 
     public void AddResponse(Message message)
     {
-        if (message.Role is not "assistant" or "system")
+        if (message.Role is not "assistant" and not "system")
             throw new ArgumentException("Response message must be of role 'assistant'");
         Messages.Add(message);
     }
