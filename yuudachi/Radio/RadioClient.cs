@@ -1,4 +1,5 @@
-﻿using NetCord.Rest;
+﻿using NetCord;
+using NetCord.Rest;
 
 using System.Text.Json;
 
@@ -13,6 +14,60 @@ public class RadioClient
     public RadioClient()
     {
         Client = new HttpClient() { BaseAddress = new Uri(frontpage) };
+    }
+
+    public async Task<EmbedProperties?> GetUpcomingAsEmbed()
+    {
+        var upcoming = await GetCurrentState();
+        if (upcoming == null)
+            return null;
+
+        if (!upcoming.Main.Isafkstream)
+        {
+            return new EmbedProperties()
+            {
+                Title = "Upcoming Songs",
+                Url = frontpage,
+                Color = new(radioRed),
+                Description = "A DJ is playing so there is no queue.",
+            };
+        }
+
+        var DjImageUrl = $"{api}/dj-image/{upcoming.Main.Dj.Djimage}";
+
+        var now = DateTimeOffset.FromUnixTimeSeconds(upcoming.Main.Current);
+
+
+        List<EmbedFieldProperties> fields = [.. upcoming.Main.Queue.Select(x => {
+                    var start = DateTimeOffset.FromUnixTimeSeconds(x.Timestamp);
+
+                    var time = $"{now - start:mm\\:ss}";
+
+            return new EmbedFieldProperties() {
+            Name = $"{time} from now",
+            Value = x.Meta,
+            Inline=false
+            }; })];
+
+        var embed = new EmbedProperties()
+        {
+            Url = frontpage,
+            Title = "Playback queue",
+            Color = new(radioRed),
+            Footer = new EmbedFooterProperties()
+            {
+                Text = $"Now playing: {upcoming.Main.Np}"
+            },
+            Author = new()
+            {
+                IconUrl = DjImageUrl,
+                Name = $"{upcoming.Main.Dj.Djname}"
+            },
+            Thumbnail = new(DjImageUrl),
+            Fields = fields
+        };
+
+        return embed;
     }
 
     public async Task<EmbedProperties?> GetCurrentAsEmbed()

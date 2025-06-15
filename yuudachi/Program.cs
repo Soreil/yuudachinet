@@ -30,7 +30,8 @@ builder.Services
                           | GatewayIntents.DirectMessages
                           | GatewayIntents.MessageContent
                           | GatewayIntents.DirectMessageReactions
-                          | GatewayIntents.GuildMessageReactions)
+                          | GatewayIntents.GuildMessageReactions
+                          | GatewayIntents.Guilds)
     .AddApplicationCommands()
     .AddComponentInteractions()
     .AddGatewayEventHandlers(typeof(Program).Assembly);

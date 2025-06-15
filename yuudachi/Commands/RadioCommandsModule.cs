@@ -18,6 +18,28 @@ public class RadioCommandsModule : ApplicationCommandModule<ApplicationCommandCo
         Logger = logger;
     }
 
+    [SubSlashCommand("queue", "Queue of upcoming songs")]
+    public async Task<InteractionMessageProperties> Queue()
+    {
+        try
+        {
+            var current = await Radio.GetUpcomingAsEmbed() ?? throw new Exception("No current state");
+            var msg = new InteractionMessageProperties()
+            {
+                Embeds = [current],
+            };
+            return msg;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error getting current state");
+            return new InteractionMessageProperties()
+            {
+                Content = $"Error: {e.Message}"
+            };
+        }
+    }
+
     [SubSlashCommand("np", "Now Playing")]
     public async Task<InteractionMessageProperties> NowPlaying()
     {
@@ -28,14 +50,6 @@ public class RadioCommandsModule : ApplicationCommandModule<ApplicationCommandCo
             var msg = new InteractionMessageProperties()
             {
                 Embeds = [embed],
-                Components = [new ActionRowProperties(
-                    [
-                    new ButtonProperties("buttondf",
-                    new EmojiProperties("⬅️"),
-                    ButtonStyle.Primary)
-
-                    ])
-                ]
             };
 
             return msg;
