@@ -44,10 +44,10 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
             _ = await RespondAsync(InteractionCallback.Message("Model not found"), false);
             return;
         }
+
         var convo = GroqClient.StartConversation(model.Id, startingTemperature: temp);
         convo.AddMessage(question);
         var res = await groqClient.ConversationResult(convo);
-
 
         var result = new InteractionMessageProperties()
         {

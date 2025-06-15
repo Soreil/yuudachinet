@@ -42,8 +42,8 @@ public class RadioClient
         var footer = new EmbedFooterProperties()
         {
             Text = current.Main.Isafkstream ?
-        $"Current thread: {current.Main.Thread}" :
-        $"Upcoming: {current.Main.Queue[0].Meta}"
+        $"Upcoming: {current.Main.Queue[0].Meta}" :
+        $"Current thread: {current.Main.Thread}"
         };
 
         var embed = new EmbedProperties
