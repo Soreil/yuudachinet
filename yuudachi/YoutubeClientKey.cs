@@ -1,6 +1,6 @@
-﻿namespace yuudachi.Groq;
+﻿namespace yuudachi;
 
-public class GroqClientKey
+public class YoutubeClientKey
 {
     public string Key { get; set; } = string.Empty;
 

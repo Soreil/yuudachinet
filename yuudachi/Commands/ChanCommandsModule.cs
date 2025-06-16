@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using yuudachi.Chan;
 using yuudachi.Chan.DTO;
 
-namespace yuudachi;
+namespace yuudachi.Commands;
 
 [SlashCommand("4chan", "4chan tools")]
 public partial class ChanCommandsModule : ApplicationCommandModule<ApplicationCommandContext>

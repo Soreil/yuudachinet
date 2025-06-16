@@ -19,6 +19,9 @@ builder.Services.Configure<GroqClientKey>(options => options.Key = builder.Confi
 
 builder.Services.Configure<GroqSettingsOptions>(builder.Configuration.GetSection("GroqSettings"));
 
+builder.Services.Configure<YoutubeClientKey>(options => options.Key = builder.Configuration["YOUTUBE_API_KEY"]
+?? throw new InvalidOperationException("Environment variable YOUTUBE_API_KEY is not set."));
+
 builder.Services
     .AddTransient<FourChanClient>()
     .AddTransient<FourChanBoardPicker>()

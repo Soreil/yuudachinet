@@ -6,7 +6,7 @@ using NetCord.Services.ApplicationCommands;
 
 using System.Runtime.InteropServices;
 
-namespace yuudachi;
+namespace yuudachi.Commands;
 
 public partial class BirdCommandsModule : ApplicationCommandModule<ApplicationCommandContext>
 {
