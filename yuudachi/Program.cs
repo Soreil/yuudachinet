@@ -10,6 +10,7 @@ using NetCord.Hosting.Services.ComponentInteractions;
 using yuudachi;
 using yuudachi.Chan;
 using yuudachi.ChoiceProviders;
+using yuudachi.Commands;
 using yuudachi.Groq;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -28,6 +29,7 @@ builder.Services
     .AddTransient<GroqClient>()
     .AddTransient<GroqModelPicker>()
     .AddSingleton<GroqConversationHistory>()
+    .AddSingleton<YoutubeResponses>()
     .AddDiscordGateway(options => options.Intents =
                             GatewayIntents.GuildMessages
                           | GatewayIntents.DirectMessages
