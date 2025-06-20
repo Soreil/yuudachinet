@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -14,12 +15,14 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
 {
     private readonly GroqClient groqClient;
     private readonly GroqConversationHistory groqConversationHistory;
+    private readonly ILogger<GroqCommandsModule> logger;
     private string MostRecentModelName;
 
-    public GroqCommandsModule(GroqClient groqClient, GroqConversationHistory groqConversationHistory, IOptions<GroqSettingsOptions> settings)
+    public GroqCommandsModule(GroqClient groqClient, GroqConversationHistory groqConversationHistory, IOptions<GroqSettingsOptions> settings, ILogger<GroqCommandsModule> logger)
     {
         this.groqClient = groqClient;
         this.groqConversationHistory = groqConversationHistory;
+        this.logger = logger;
         MostRecentModelName = settings.Value.DefaultModelName;
     }
 
@@ -41,24 +44,67 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
         var model = await groqClient.TryGetModel(modelName);
         if (model == null || model.Id is null)
         {
+            logger.LogWarning("Model not found: {ModelName}", modelName);
             _ = await RespondAsync(InteractionCallback.Message("Model not found"), false);
             return;
         }
 
         var convo = GroqClient.StartConversation(model.Id, startingTemperature: temp);
         convo.AddMessage(question);
-        var res = await groqClient.ConversationResult(convo);
 
-        var result = new InteractionMessageProperties()
+        GroqResponse? response;
+        var loadingResponse = await RespondAsync(InteractionCallback.DeferredMessage(MessageFlags.Loading), true);
+        try
         {
-            Content = res.Choices[0].Message.Content,
-        };
 
-        var reply = await RespondAsync(InteractionCallback.Message(result), true);
 
-        if (reply?.Interaction.ResponseMessageId is not null)
+            response = await groqClient.ConversationResult(convo);
+            if (response is null || response.Choices.Count == 0)
+            {
+                logger.LogWarning("No response received from Groq for question: {Question}", question);
+                _ = await ModifyResponseAsync(x => x.WithContent("No response received from Groq"));
+                return;
+            }
+        }
+        catch (Exception ex)
         {
-            groqConversationHistory.Conversations.Add(reply.Interaction.ResponseMessageId.Value, convo);
+            logger.LogError(ex, "Error while calling Groq API");
+            _ = await ModifyResponseAsync(x => x.WithContent($"An error occurred while calling groq: {ex.Message}"));
+            return;
+        }
+
+        var truncationWarning = "... (truncated)";
+        var maxSize = 2000 - truncationWarning.Length;
+
+        string content = response.Choices[0].Message.Content;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            logger.LogWarning("Received empty response from Groq for question: {Question}", question);
+            content = "No response received from Groq";
+        }
+
+
+        else if (content.Length > maxSize)
+        {
+            logger.LogWarning("Response content too long, truncating for question: {Question}", question);
+            content = content[..maxSize] + truncationWarning;
+        }
+
+        //var result = new InteractionMessageProperties()
+        //{
+        //    Content = content,
+        //};
+
+        var r = await ModifyResponseAsync(x => x.WithContent(content));
+        //var reply = await RespondAsync(InteractionCallback.Message(result), true);
+
+        if (loadingResponse?.Interaction.ResponseMessageId is not null)
+        {
+            groqConversationHistory.Conversations.Add(loadingResponse.Interaction.ResponseMessageId.Value, convo);
+        }
+        else
+        {
+            logger.LogWarning("Failed to get response message ID for Groq conversation");
         }
     }
 

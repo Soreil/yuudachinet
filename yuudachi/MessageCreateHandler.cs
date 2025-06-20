@@ -15,15 +15,56 @@ public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.Gro
     {
         if (message.ReferencedMessage is not null && convoHistory.Conversations.TryGetValue(message.ReferencedMessage.Id, out Conversation? convo))
         {
-            convo.AddMessage(message.Content);
-            var res = await groqClient.ConversationResult(convo);
+            var question = message.Content;
+            convo.AddMessage(question);
+
+            GroqResponse? response;
+            try
+            {
+                response = await groqClient.ConversationResult(convo);
+                if (response is null || response.Choices.Count == 0)
+                {
+                    logger.LogWarning("No response received from Groq for question: {Question}", question);
+                    _ = await message.ReplyAsync(new ReplyMessageProperties() { Content = "No response received from Groq" });
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error while calling Groq API");
+                _ = await message.ReplyAsync(new ReplyMessageProperties() { Content = $"An error occurred while calling groq: {ex.Message}" });
+                return;
+            }
+
+            var truncationWarning = "... (truncated)";
+            var maxSize = 2000 - truncationWarning.Length;
+
+            string content = response.Choices[0].Message.Content;
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                logger.LogWarning("Received empty response from Groq for question: {Question}", question);
+                content = "No response received from Groq";
+            }
 
 
-            var body = res.Choices[0].Message.Content;
+            else if (content.Length > maxSize)
+            {
+                logger.LogWarning("Response content too long, truncating for question: {Question}", question);
+                content = content[..maxSize] + truncationWarning;
+            }
 
-            var resp = await message.ReplyAsync(new ReplyMessageProperties() { Content = body });
+            var reply = await message.ReplyAsync(new ReplyMessageProperties() { Content = content });
 
-            convoHistory.Conversations.Add(resp.Id, convo);
+
+            if (reply?.InteractionMetadata?.InteractedMessageId.Value is not null)
+            {
+                var val = reply?.InteractionMetadata?.InteractedMessageId;
+                convoHistory.Conversations.Add(val!.Value, convo);
+            }
+            else
+            {
+                logger.LogWarning("Failed to get response message ID for Groq conversation");
+            }
         }
 
         else
