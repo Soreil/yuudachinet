@@ -11,6 +11,8 @@ namespace yuudachi;
 [GatewayEvent(nameof(GatewayClient.MessageCreate))]
 public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.GroqConversationHistory convoHistory, GroqClient groqClient) : IGatewayEventHandler<NetCord.Gateway.Message>
 {
+    private const string errorPrefix = "Oopsie woopsie we got an error groq sisters: ";
+
     public async ValueTask HandleAsync(NetCord.Gateway.Message message)
     {
         if (message.ReferencedMessage is not null && convoHistory.Conversations.TryGetValue(message.ReferencedMessage.Id, out Conversation? convo))
@@ -25,14 +27,14 @@ public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.Gro
                 if (response is null || response.Choices.Count == 0)
                 {
                     logger.LogWarning("No response received from Groq for question: {Question}", question);
-                    _ = await message.ReplyAsync(new ReplyMessageProperties() { Content = "No response received from Groq" });
+                    _ = await message.ReplyAsync(new ReplyMessageProperties() { Content = $"{errorPrefix}No response received from Groq" });
                     return;
                 }
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error while calling Groq API");
-                _ = await message.ReplyAsync(new ReplyMessageProperties() { Content = $"An error occurred while calling groq: {ex.Message}" });
+                _ = await message.ReplyAsync(new ReplyMessageProperties() { Content = $"{errorPrefix}{ex.Message}" });
                 return;
             }
 
@@ -43,7 +45,7 @@ public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.Gro
             if (string.IsNullOrWhiteSpace(content))
             {
                 logger.LogWarning("Received empty response from Groq for question: {Question}", question);
-                content = "No response received from Groq";
+                content = $"{errorPrefix}No response received from Groq";
             }
 
 
@@ -56,7 +58,7 @@ public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.Gro
             var reply = await message.ReplyAsync(new ReplyMessageProperties() { Content = content });
 
 
-            if (reply?.InteractionMetadata?.InteractedMessageId.Value is not null)
+            if (reply?.InteractionMetadata?.InteractedMessageId!.Value is not null)
             {
                 var val = reply?.InteractionMetadata?.InteractedMessageId;
                 convoHistory.Conversations.Add(val!.Value, convo);

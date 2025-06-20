@@ -1,5 +1,5 @@
-﻿using yuudachi;
-using yuudachi.Chan;
+﻿using yuudachi.Chan;
+using yuudachi.Commands;
 
 namespace Tests;
 

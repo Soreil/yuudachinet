@@ -17,6 +17,7 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
     private readonly GroqConversationHistory groqConversationHistory;
     private readonly ILogger<GroqCommandsModule> logger;
     private string MostRecentModelName;
+    private const string errorPrefix = "Oopsie woopsie we got an error groq sisters: ";
 
     public GroqCommandsModule(GroqClient groqClient, GroqConversationHistory groqConversationHistory, IOptions<GroqSettingsOptions> settings, ILogger<GroqCommandsModule> logger)
     {
@@ -45,7 +46,7 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
         if (model == null || model.Id is null)
         {
             logger.LogWarning("Model not found: {ModelName}", modelName);
-            _ = await RespondAsync(InteractionCallback.Message("Model not found"), false);
+            _ = await RespondAsync(InteractionCallback.Message($"{errorPrefix}Model not found"), false);
             return;
         }
 
@@ -56,20 +57,18 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
         var loadingResponse = await RespondAsync(InteractionCallback.DeferredMessage(MessageFlags.Loading), true);
         try
         {
-
-
             response = await groqClient.ConversationResult(convo);
             if (response is null || response.Choices.Count == 0)
             {
                 logger.LogWarning("No response received from Groq for question: {Question}", question);
-                _ = await ModifyResponseAsync(x => x.WithContent("No response received from Groq"));
+                _ = await ModifyResponseAsync(x => x.WithContent($"{errorPrefix}No response received from Groq"));
                 return;
             }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while calling Groq API");
-            _ = await ModifyResponseAsync(x => x.WithContent($"An error occurred while calling groq: {ex.Message}"));
+            _ = await ModifyResponseAsync(x => x.WithContent($"{errorPrefix}{ex.Message}"));
             return;
         }
 
@@ -80,7 +79,7 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
         if (string.IsNullOrWhiteSpace(content))
         {
             logger.LogWarning("Received empty response from Groq for question: {Question}", question);
-            content = "No response received from Groq";
+            content = $"{errorPrefix}No response received from Groq";
         }
 
 
