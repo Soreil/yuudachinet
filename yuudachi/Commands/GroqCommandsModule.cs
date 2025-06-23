@@ -17,6 +17,7 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
     private readonly GroqConversationHistory groqConversationHistory;
     private readonly ILogger<GroqCommandsModule> logger;
     private string MostRecentModelName;
+    private string MostRecentToolModelName;
     private const string errorPrefix = "Oopsie woopsie we got an error groq sisters: ";
 
     public GroqCommandsModule(GroqClient groqClient, GroqConversationHistory groqConversationHistory, IOptions<GroqSettingsOptions> settings, ILogger<GroqCommandsModule> logger)
@@ -25,6 +26,90 @@ public class GroqCommandsModule : ApplicationCommandModule<ApplicationCommandCon
         this.groqConversationHistory = groqConversationHistory;
         this.logger = logger;
         MostRecentModelName = settings.Value.DefaultModelName;
+        MostRecentToolModelName = settings.Value.DefaultToolModelName;
+    }
+
+    /*compound-beta: supports multiple tool calls per request. This system is great for use cases that require multiple web searches or code executions per request.
+    compound-beta-mini: supports a single tool call per request. This system is great for use cases that require a single web search or code execution per request. compound-beta-mini has an average of 3x lower latency than compound-beta.
+    */
+    [SubSlashCommand("tool", "Uses interactive tools such as web search or code execution")]
+    public async Task Tool(
+        [SlashCommandParameter(Description = "Your query", MinLength = 1)] string question,
+        [SlashCommandParameter(Description = "Temperature controls how creative the answers are, 0.0 is rigid and 2.0 is extremely cooked", MinValue = 0.0, MaxValue = 2.0)] double temp = 0.6,
+        [SlashCommandParameter(ChoicesProviderType = typeof(GroqToolModelPicker))] string? modelName = null)
+    {
+        if (modelName is null)
+        {
+            modelName = MostRecentToolModelName;
+        }
+        else
+        {
+            MostRecentToolModelName = modelName;
+        }
+
+        var model = await groqClient.TryGetModel(modelName);
+        if (model == null || model.Id is null)
+        {
+            logger.LogWarning("Model not found: {ModelName}", modelName);
+            _ = await RespondAsync(InteractionCallback.Message($"{errorPrefix}Model not found"), false);
+            return;
+        }
+
+        var convo = GroqClient.StartAgenticToolConversation(model.Id, startingTemperature: temp);
+        convo.AddMessage(question);
+
+        GroqResponse? response;
+        var loadingResponse = await RespondAsync(InteractionCallback.DeferredMessage(MessageFlags.Loading), true);
+        try
+        {
+            response = await groqClient.ConversationResult(convo);
+            if (response is null || response.Choices.Count == 0)
+            {
+                logger.LogWarning("No response received from Groq for question: {Question}", question);
+                _ = await ModifyResponseAsync(x => x.WithContent($"{errorPrefix}No response received from Groq"));
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while calling Groq API");
+            _ = await ModifyResponseAsync(x => x.WithContent($"{errorPrefix}{ex.Message}"));
+            return;
+        }
+
+        var truncationWarning = "... (truncated)";
+        var maxSize = 2000 - truncationWarning.Length;
+
+        string content = response.Choices[0].Message.Content;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            logger.LogWarning("Received empty response from Groq for question: {Question}", question);
+            content = $"{errorPrefix}No response received from Groq";
+        }
+
+
+        else if (content.Length > maxSize)
+        {
+            logger.LogWarning("Response content too long, truncating for question: {Question}", question);
+            content = content[..maxSize] + truncationWarning;
+        }
+
+        //var result = new InteractionMessageProperties()
+        //{
+        //    Content = content,
+        //};
+
+        var r = await ModifyResponseAsync(x => x.WithContent(content));
+        //var reply = await RespondAsync(InteractionCallback.Message(result), true);
+
+        if (loadingResponse?.Interaction.ResponseMessageId is not null)
+        {
+            groqConversationHistory.Conversations.Add(loadingResponse.Interaction.ResponseMessageId.Value, convo);
+        }
+        else
+        {
+            logger.LogWarning("Failed to get response message ID for Groq conversation");
+        }
     }
 
     [SubSlashCommand("ask", "Ask a question")]

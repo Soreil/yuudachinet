@@ -5,18 +5,20 @@ public class Conversation
 {
     public string Model { get; set; }
     public double Temperature { get; set; }
+    public string? ReasoningFormat { get; set;}
 
     private List<Message> Messages { get; set; } = [];
 
-    public Conversation(string model, double startingTemperature = 0.6)
+    public Conversation(string model, double startingTemperature = 0.6, string? reasoningFormat = "hidden")
     {
         Model = model;
         Temperature = startingTemperature;
+        ReasoningFormat = reasoningFormat;
     }
 
-    public GroqRequest ToGroqRequest(string reasoningFormat = "hidden")
+    public GroqRequest ToGroqRequest()
     {
-        return new GroqRequest(Messages, Model, Temperature, reasoningFormat);
+        return new GroqRequest(Messages, Model, Temperature, ReasoningFormat);
     }
 
     public void AddResponse(Message message)

@@ -82,4 +82,24 @@ public class GroqClient
             convo.SetSystemMessage(Message.NewSystemMessage(prompt));
         return convo;
     }
+
+    /*
+     * There are two agentic tool systems available:
+
+compound-beta: supports multiple tool calls per request. This system is great for use cases that require multiple web searches or code executions per request.
+compound-beta-mini: supports a single tool call per request. This system is great for use cases that require a single web search or code execution per request. compound-beta-mini has an average of 3x lower latency than compound-beta.
+Both systems support the following tools:
+
+Web Search via Tavily
+Code Execution via E2B (only Python is currently supported)
+
+Custom user-provided tools are not supported at this time.
+
+*/
+
+    public static Conversation StartAgenticToolConversation(string model, double startingTemperature = 0.6)
+    {
+        var convo = new Conversation(model, startingTemperature, null);
+        return convo;
+    }
 }
