@@ -58,15 +58,7 @@ public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.Gro
             var reply = await message.ReplyAsync(new ReplyMessageProperties() { Content = content });
 
 
-            if (reply?.InteractionMetadata?.InteractedMessageId!.Value is not null)
-            {
-                var val = reply?.InteractionMetadata?.InteractedMessageId;
-                convoHistory.Conversations.Add(val!.Value, convo);
-            }
-            else
-            {
-                logger.LogWarning("Failed to get response message ID for Groq conversation");
-            }
+            convoHistory.Conversations.Add(reply.Id, convo);
         }
 
         else
