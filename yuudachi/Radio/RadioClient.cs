@@ -94,15 +94,26 @@ public class RadioClient
             },
         ];
 
-        var footer = new EmbedFooterProperties()
+        EmbedFooterProperties? footer = null;
+        EmbedImageProperties? image = null;
+
+        if (current.Main.Isafkstream && !HasImage(current.Main.Thread))
         {
-            Text = current.Main.Isafkstream ?
-        $"Upcoming: {current.Main.Queue[0].Meta}" :
-        $"Current thread: {current.Main.Thread}"
-        };
+            footer = new EmbedFooterProperties()
+            {
+                Text = current.Main.Isafkstream ?
+            $"Upcoming: {current.Main.Queue[0].Meta}" :
+            $"Current thread: {current.Main.Thread}"
+            };
+        }
+        else
+        {
+            image = new EmbedImageProperties(GetImageURL(current.Main.Thread));
+        }
 
         var embed = new EmbedProperties
         {
+            Image = image,
             Title = "Now Playing",
             Url = frontpage,
             Color = new(radioRed),
@@ -113,6 +124,28 @@ public class RadioClient
         };
 
         return embed;
+    }
+
+    private static string? GetImageURL(string thread)
+    {
+        var index = thread.IndexOf(':');
+        if (index == -1) return thread;
+        var url = thread[(index + 1)..].Trim();
+        return url;
+    }
+
+    private static bool HasImage(string thread)
+    {
+        if (!Uri.IsWellFormedUriString(thread, UriKind.RelativeOrAbsolute)) return false;
+
+        var uri = new Uri(thread, UriKind.RelativeOrAbsolute);
+
+        if (!uri.IsFile) return false;
+
+        var fileName = uri.LocalPath;
+        var fileExtension = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
+        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        return imageExtensions.Contains(fileExtension);
     }
 
     public async Task<Current?> GetCurrentState()
