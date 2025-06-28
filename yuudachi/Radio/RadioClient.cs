@@ -138,14 +138,21 @@ public class RadioClient
     {
         if (!Uri.IsWellFormedUriString(thread, UriKind.RelativeOrAbsolute)) return false;
 
-        var uri = new Uri(thread, UriKind.RelativeOrAbsolute);
+        try
+        {
+            var uri = new Uri(thread, UriKind.RelativeOrAbsolute);
 
-        if (!uri.IsFile) return false;
+            if (!uri.IsFile) return false;
 
-        var fileName = uri.LocalPath;
-        var fileExtension = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
-        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-        return imageExtensions.Contains(fileExtension);
+            var fileName = uri.LocalPath;
+            var fileExtension = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            return imageExtensions.Contains(fileExtension);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task<Current?> GetCurrentState()
