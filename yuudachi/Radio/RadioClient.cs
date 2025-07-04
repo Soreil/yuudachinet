@@ -97,7 +97,7 @@ public class RadioClient
         EmbedFooterProperties? footer = null;
         EmbedImageProperties? image = null;
 
-        if (current.Main.Isafkstream && !HasImage(current.Main.Thread))
+        if (current.Main.Isafkstream || !HasImage(current.Main.Thread))
         {
             footer = new EmbedFooterProperties()
             {
@@ -128,10 +128,10 @@ public class RadioClient
 
     private static string? GetImageURL(string thread)
     {
-        var index = thread.IndexOf(':');
-        if (index == -1) return thread;
-        var url = thread[(index + 1)..].Trim();
-        return url;
+        var prefix = "file:";
+        return thread.StartsWith(prefix) ?
+            thread[(prefix.Length + 1)..] :
+            thread;
     }
 
     private static bool HasImage(string thread)
