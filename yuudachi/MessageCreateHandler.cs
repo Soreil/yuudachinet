@@ -8,6 +8,7 @@ using yuudachi.Groq;
 
 namespace yuudachi;
 
+
 [GatewayEvent(nameof(GatewayClient.MessageCreate))]
 public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.GroqConversationHistory convoHistory, GroqClient groqClient) : IGatewayEventHandler<NetCord.Gateway.Message>
 {

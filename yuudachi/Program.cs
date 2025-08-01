@@ -48,7 +48,6 @@ builder.Services
 var host = builder.Build()
     .UseGatewayEventHandlers();
 
-
 var client = host.Services.GetRequiredService<FourChanClient>();
 FourChanBoardPicker.Chan = client;
 var groqClient = host.Services.GetRequiredService<GroqClient>();
