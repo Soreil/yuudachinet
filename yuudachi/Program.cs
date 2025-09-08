@@ -21,7 +21,7 @@ builder.Services.Configure<GroqClientKey>(options => options.Key = builder.Confi
 
 builder.Services.Configure<GroqSettingsOptions>(builder.Configuration.GetSection("GroqSettings"));
 
-builder.Services.Configure<GroqToolModels>(builder.Configuration.GetSection("GroqToolModels"));
+//builder.Services.Configure<GroqToolModels>(builder.Configuration.GetSection("GroqToolModels"));
 
 builder.Services.Configure<YoutubeClientKey>(options => options.Key = builder.Configuration["YOUTUBE_API_KEY"]
 ?? throw new InvalidOperationException("Environment variable YOUTUBE_API_KEY is not set."));
@@ -31,7 +31,7 @@ builder.Services
     .AddTransient<FourChanBoardPicker>()
     .AddTransient<GroqClient>()
     .AddTransient<GroqModelPicker>()
-    .AddTransient<GroqToolModelPicker>()
+    //.AddTransient<GroqToolModelPicker>()
     .AddSingleton<GroqConversationHistory>()
     .AddSingleton<YoutubeResponses>()
     .AddDiscordGateway(options => options.Intents =
@@ -52,9 +52,9 @@ var client = host.Services.GetRequiredService<FourChanClient>();
 FourChanBoardPicker.Chan = client;
 var groqClient = host.Services.GetRequiredService<GroqClient>();
 GroqModelPicker.Client = groqClient;
-GroqToolModelPicker.Client = groqClient;
-GroqToolModelPicker.Options = host.Services.GetService<IOptions<GroqToolModels>>()
-    ?? throw new InvalidOperationException("GroqToolModels options are not configured.");
+//GroqToolModelPicker.Client = groqClient;
+//GroqToolModelPicker.Options = host.Services.GetService<IOptions<GroqToolModels>>()
+//    ?? throw new InvalidOperationException("GroqToolModels options are not configured.");
 
 host.AddModules(typeof(Program).Assembly);
 
