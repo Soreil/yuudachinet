@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
@@ -43,10 +42,9 @@ builder.Services
                           | GatewayIntents.Guilds)
     .AddApplicationCommands()
     .AddComponentInteractions()
-    .AddGatewayEventHandlers(typeof(Program).Assembly);
+    .AddGatewayHandlers(typeof(Program).Assembly);
 
-var host = builder.Build()
-    .UseGatewayEventHandlers();
+var host = builder.Build();    
 
 var client = host.Services.GetRequiredService<FourChanClient>();
 FourChanBoardPicker.Chan = client;

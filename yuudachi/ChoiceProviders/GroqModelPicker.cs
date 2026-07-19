@@ -1,6 +1,8 @@
 ﻿using NetCord.Services.ApplicationCommands;
 using NetCord.Rest;
+
 using yuudachi.Groq;
+
 using Microsoft.Extensions.Options;
 
 namespace yuudachi.ChoiceProviders;
@@ -42,6 +44,8 @@ public class GroqToolModelPicker : IChoicesProvider<ApplicationCommandContext>
             return new();
         if (Models == null || Models.Count == 0)
         {
+            System.Diagnostics.Debug.Assert(Options is not null);
+
             Models = Options.Value.Models.Select(x => (x, Client.TryGetModel(x).Result))
                 .OfType<(string, GroqModelDescriptor)>()
                 .Where(x => x.Item2.Active)

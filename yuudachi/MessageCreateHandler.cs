@@ -9,8 +9,7 @@ using yuudachi.Groq;
 namespace yuudachi;
 
 
-[GatewayEvent(nameof(GatewayClient.MessageCreate))]
-public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.GroqConversationHistory convoHistory, GroqClient groqClient) : IGatewayEventHandler<NetCord.Gateway.Message>
+public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, Groq.GroqConversationHistory convoHistory, GroqClient groqClient) : IMessageCreateGatewayHandler
 {
     private const string errorPrefix = "Oopsie woopsie we got an error groq sisters: ";
 

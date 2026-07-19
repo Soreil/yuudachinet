@@ -14,8 +14,7 @@ using yuudachi.Commands;
 
 namespace yuudachi;
 
-[GatewayEvent(nameof(GatewayClient.MessageCreate))]
-public partial class EmbedGeneratorHandler(ILogger<MessageCreateHandler> logger, FourChanClient fourChanClient) : IGatewayEventHandler<NetCord.Gateway.Message>
+public partial class EmbedGeneratorHandler(ILogger<MessageCreateHandler> logger, FourChanClient fourChanClient) : IMessageCreateGatewayHandler
 {
     public ILogger<MessageCreateHandler> Logger { get; } = logger;
     public FourChanClient FourChanClient { get; } = fourChanClient;
