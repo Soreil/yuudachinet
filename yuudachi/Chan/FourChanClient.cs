@@ -18,6 +18,7 @@ public partial class FourChanClient
     const string APIRoot = @"https://a.4cdn.org/";
     const string ImageRoot = @"https://i.4cdn.org/";
     const string StaticRoot = @"https://s.4cdn.org/";
+    const string BoardsRoot = @"https://boards.4chan.org/";
     const string boards = @"boards.json";
 
     const int GifBanners = 253;
@@ -137,7 +138,7 @@ public partial class FourChanClient
 
     public static string GetImageUrl(string board, long timestamp, string ext) => $"{ImageRoot}{board}/{timestamp}{ext}";
 
-    public static string GetThreadURL(string board, long thread) => $"{ImageRoot}{board}/thread/{thread}";
+    public static string GetThreadURL(string board, long thread) => $"{BoardsRoot}{board}/thread/{thread}";
 
     public async Task<List<BoardDTO>> GetBoards()
     {
