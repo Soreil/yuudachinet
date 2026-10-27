@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 
+using System.Net;
+
 using yuudachi;
 using yuudachi.Chan;
 using yuudachi.Commands;
@@ -97,11 +99,16 @@ public class FourChanTests
     {
         var logger = NullLogger<FourChanClient>.Instance;
 
-        var client = new FourChanClient(logger);
+        using var handler = new ThreadResponseHandler();
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://a.4cdn.org/") };
+        var client = new FourChanClient(logger, httpClient);
 
         var sample = @"This is going to be a horrible thread https://boards.4chan.org/a/thread/281091707";
         var urls = await EmbedGeneratorHandler.TryGet4ChanURL(sample, client);
+        Assert.That(urls, Is.Not.Null);
         Assert.That(urls, Has.Count.EqualTo(1));
+        Assert.That(urls[0].Item2, Is.EqualTo("a"));
+        Assert.That(urls[0].Item1.Posts[0].Number, Is.EqualTo(281091707));
 
         var sampleWithoutURL = @"Okay that's it
 I'm going to make yuudachi generate actual embeds for 4chan I think
@@ -111,8 +118,72 @@ Why not include the OP picture??
 
         urls = await EmbedGeneratorHandler.TryGet4ChanURL(sampleWithoutURL, client);
         Assert.That(urls, Is.Null);
+        Assert.That(handler.Requests, Has.Count.EqualTo(1));
         var sampleWithMultipleUrls = @"https://boards.4chan.org/a/thread/281091707 https://boards.4chan.org/jp/thread/49779689";
         urls = await EmbedGeneratorHandler.TryGet4ChanURL(sampleWithMultipleUrls, client);
+        Assert.That(urls, Is.Not.Null);
         Assert.That(urls, Has.Count.EqualTo(2));
+        Assert.That(urls.Select(url => url.Item2), Is.EqualTo(new[] { "a", "jp" }));
+        Assert.That(urls.Select(url => url.Item1.Posts[0].Number), Is.EqualTo([281091707, 49779689]));
+        Assert.That(handler.Requests, Is.EqualTo(
+        [
+            "/a/thread/281091707.json",
+            "/a/thread/281091707.json",
+            "/jp/thread/49779689.json"
+        ]));
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task ParseUnavailableThreadUrl(bool includeAvailableThread)
+    {
+        using var handler = new ThreadResponseHandler();
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://a.4cdn.org/") };
+        var client = new FourChanClient(NullLogger<FourChanClient>.Instance, httpClient);
+        var sample = "https://boards.4chan.org/a/thread/1";
+        if (includeAvailableThread)
+        {
+            sample += " https://boards.4chan.org/jp/thread/49779689";
+        }
+
+        var urls = await EmbedGeneratorHandler.TryGet4ChanURL(sample, client);
+
+        if (includeAvailableThread)
+        {
+            Assert.That(urls, Is.Not.Null);
+            Assert.That(urls, Has.Count.EqualTo(1));
+            Assert.That(urls[0].Item2, Is.EqualTo("jp"));
+            Assert.That(urls[0].Item1.Posts[0].Number, Is.EqualTo(49779689));
+        }
+        else
+        {
+            Assert.That(urls, Is.Null);
+        }
+        Assert.That(handler.Requests, Has.Count.EqualTo(includeAvailableThread ? 2 : 1));
+    }
+
+    private sealed class ThreadResponseHandler : HttpMessageHandler
+    {
+        public List<string> Requests { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var path = (request.RequestUri ?? throw new InvalidOperationException("Missing request URI.")).AbsolutePath;
+            Requests.Add(path);
+            var response = path switch
+            {
+                "/a/thread/281091707.json" => new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"posts\":[{\"no\":281091707}]}")
+                },
+                "/jp/thread/49779689.json" => new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"posts\":[{\"no\":49779689}]}")
+                },
+                "/a/thread/1.json" => new HttpResponseMessage(HttpStatusCode.NotFound),
+                _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
+            };
+            return Task.FromResult(response);
+        }
     }
 }

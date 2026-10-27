@@ -123,16 +123,23 @@ public partial class FourChanClient
         };
     }
 
-    public FourChanClient(ILogger<FourChanClient> logger)
-    {
-        Client = new HttpClient()
+    public FourChanClient(ILogger<FourChanClient> logger) : this(logger, new HttpClient()
         {
             BaseAddress = new Uri(APIRoot),
             DefaultRequestHeaders = {
                 { "User-Agent", "Yuudachi" },
                 { "Accept", "application/json" }
             }
-        };
+        })
+    {
+    }
+
+    /// <summary>
+    /// Uses a caller-owned HTTP client configured with the API base address and headers.
+    /// </summary>
+    public FourChanClient(ILogger<FourChanClient> logger, HttpClient client)
+    {
+        Client = client;
         Logger = logger;
     }
 
