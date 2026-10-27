@@ -9,3 +9,12 @@ public class YoutubeClientKey
         return Key;
     }
 }
+
+public class DeepSeekClientKey
+{
+    public string Key { get; set; } = string.Empty;
+    public override string ToString()
+    {
+        return Key;
+    }
+}

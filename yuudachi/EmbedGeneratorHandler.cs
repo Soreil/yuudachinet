@@ -1,16 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 
-using NetCord;
-using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
 using NetCord.Rest;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 using yuudachi.Chan;
 using yuudachi.Chan.DTO;
-using yuudachi.Commands;
 
 namespace yuudachi;
 
